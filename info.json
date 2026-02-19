@@ -1,0 +1,14 @@
+{
+    "name": "dynamic_platform_lighting",
+    "version": "0.1.0",
+    "title": "Dynamic Platform Lighting",
+    "author": "Talandar",
+    "dependencies": [
+        "base >= 2.0",
+        "space-age"
+    ],
+    "description": "Dynamically adjusts platform lighting based on solar power, orbital connections, and the platform’s current location",
+    "factorio_version": "2.0",
+    "space_travel_required": true,
+    "spoiling_required": true
+}
