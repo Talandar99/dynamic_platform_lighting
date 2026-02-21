@@ -1,6 +1,22 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026-02-21
+  Changelog:
+    - bottom on the brightness scale is more extreme now. Enjoy deep darkness of solar system edge
+  Bugfixes:
+    - updated year in changelog
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2026-02-20
+  Changelog:
+    - changed lookup table for space-platform-hub. 
+      Now difference in brightness should be visible on whole scale of solar power not just middle 
+      section of it. New lighting scale should feel smoother.
+  Bugfixes:
+    - changing lighting should now almost don't change solar power as side effect 
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
-Date: 2025-02-20
+Date: 2026-02-20
   Changelog:
     - release
 ---------------------------------------------------------------------------------------------------

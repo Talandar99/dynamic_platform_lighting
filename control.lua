@@ -26,8 +26,11 @@ local function update_platform(surface)
 	surface.freeze_daytime = true
 	local min_s = storage.solar_min
 	local max_s = storage.solar_max
+
 	local normalized = (solar - min_s) / (max_s - min_s)
-	surface.daytime = 0.5 + math.min(math.max(normalized, 0), 1) * 0.5
+	normalized = math.min(math.max(normalized, 0), 1)
+
+	surface.daytime = 0.99 + normalized * 0.01
 end
 
 local function ensure_storage()
