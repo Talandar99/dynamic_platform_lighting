@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026-02-23
+  Changelog:
+    - added setting to disable deep darkness. You can now disable it to make platforms 
+      brighter even with almost no solar power
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026-02-21
   Changelog:

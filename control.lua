@@ -36,7 +36,7 @@ end
 local function ensure_storage()
 	storage.platform_memory = storage.platform_memory or {}
 	storage.solar_min = 0
-	storage.solar_max = settings.startup["max_solar_power_in_space"].value
+	storage.solar_max = settings.startup["dynamic_platform_max_solar_power_in_space"].value
 end
 local function on_init()
 	ensure_storage()
