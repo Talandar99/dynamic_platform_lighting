@@ -4,7 +4,8 @@ local function update_platform(surface)
 	end
 
 	local platform = surface.platform
-	local solar
+	local solar = nil
+
 	if platform.space_connection and platform.space_connection.from and platform.space_connection.to then
 		local from_s = platform.space_connection.from.solar_power_in_space
 		local to_s = platform.space_connection.to.solar_power_in_space
@@ -12,35 +13,38 @@ local function update_platform(surface)
 			solar = from_s * (1 - platform.distance) + to_s * platform.distance
 		end
 	end
+
 	if not solar and platform.space_location then
 		solar = platform.space_location.solar_power_in_space
 	end
+
 	if solar then
 		storage.platform_memory[surface.index] = solar
 	else
-		solar = storage.platform_memory[surface.index]
+		solar = storage.platform_memory[surface.index] or 10
 	end
-	if not solar then
-		return
-	end
-	surface.freeze_daytime = true
+
 	local min_s = storage.solar_min
-	local max_s = storage.solar_max
+	local max_s = storage.solar_max or 600
 
 	local normalized = (solar - min_s) / (max_s - min_s)
 	normalized = math.min(math.max(normalized, 0), 1)
 
-	surface.daytime = 0.99 + normalized * 0.01
+	surface.freeze_daytime = true
+
+	surface.daytime = 0.99 + (normalized * 0.01)
 end
 
 local function ensure_storage()
 	storage.platform_memory = storage.platform_memory or {}
 	storage.solar_min = 0
-	storage.solar_max = settings.startup["dynamic_platform_max_solar_power_in_space"].value
+	storage.solar_max = settings.startup["dynamic_platform_max_solar_power_in_space"].value or 600
 end
+
 local function on_init()
 	ensure_storage()
 end
+
 local function on_configuration_changed()
 	ensure_storage()
 end
