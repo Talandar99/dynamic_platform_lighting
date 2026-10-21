@@ -3,6 +3,13 @@ local function update_platform(surface)
 		return
 	end
 
+	surface.freeze_daytime = true
+
+	if settings.startup["dynamic_platform_always_dark"].value then
+		surface.daytime = 0.5
+		return
+	end
+
 	local platform = surface.platform
 	local solar = nil
 
@@ -25,20 +32,26 @@ local function update_platform(surface)
 	end
 
 	local min_s = storage.solar_min
-	local max_s = storage.solar_max or 600
+	local max_s = storage.solar_max
 
 	local normalized = (solar - min_s) / (max_s - min_s)
-	normalized = math.min(math.max(normalized, 0), 1)
+	normalized = math.min(math.max(normalized, 0), 1) * storage.brightness
 
-	surface.freeze_daytime = true
+	surface.daytime = 0.995 + (normalized * 0.005)
+end
 
-	surface.daytime = 0.99 + (normalized * 0.01)
+local function get_max_solar()
+	local mod_data = prototypes.mod_data["dynamic_platform_lighting-solar-power"]
+	if mod_data then
+		return mod_data.data.max_solar_power_in_space
+	end
 end
 
 local function ensure_storage()
 	storage.platform_memory = storage.platform_memory or {}
 	storage.solar_min = 0
-	storage.solar_max = settings.startup["dynamic_platform_max_solar_power_in_space"].value or 600
+	storage.solar_max = get_max_solar()
+	storage.brightness = settings.startup["dynamic_platform_brightness"].value / 100
 end
 
 local function on_init()
