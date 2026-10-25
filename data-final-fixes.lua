@@ -1,9 +1,3 @@
-local function report(message)
-	if log then
-		log("[dynamic_platform_lighting] " .. message)
-	end
-end
-
 local function get_own_lut(location)
 	if
 		location.platform_surface_render_parameters
@@ -49,6 +43,28 @@ local function set_lut(location, lut)
 	location.platform_surface_render_parameters.day_night_cycle_color_lookup = lut
 end
 
+local MIDNIGHT = 0.995
+
+local function set_midnight_lut(location, lut_path)
+	local parameters = location.platform_surface_render_parameters
+	if not parameters or not parameters.day_night_cycle_color_lookup then
+		return
+	end
+
+	local lut = parameters.day_night_cycle_color_lookup
+	for _, entry in ipairs(lut) do
+		if entry[1] >= MIDNIGHT then
+			entry[2] = lut_path
+			return
+		end
+	end
+
+	table.insert(lut, { MIDNIGHT, lut_path })
+	table.sort(lut, function(a, b)
+		return a[1] < b[1]
+	end)
+end
+
 local planet_luts = {}
 
 for name, planet in pairs(data.raw["planet"] or {}) do
@@ -67,15 +83,17 @@ for _, location in pairs(data.raw["space-location"] or {}) do
 	end
 end
 
-local planet_names = {}
-for name in pairs(planet_luts) do
-	planet_names[#planet_names + 1] = name
-end
-table.sort(planet_names)
+local lut_choice = settings.startup["dynamic_platform_lut"].value
 
-local lut_setting = settings.startup["dynamic_platform_lut"]
-local lut_choice = lut_setting and lut_setting.value or "dynamic"
-report("lut choice: " .. tostring(lut_choice) .. ", planets: " .. table.concat(planet_names, ", "))
+if settings.startup["dynamic_platform_max_dark_lut"].value then
+	local max_dark_lut = "__dynamic_platform_lighting__/graphics/max-dark.png"
+	for _, planet in pairs(data.raw["planet"] or {}) do
+		set_midnight_lut(planet, max_dark_lut)
+	end
+	for _, location in pairs(data.raw["space-location"] or {}) do
+		set_midnight_lut(location, max_dark_lut)
+	end
+end
 
 if lut_choice ~= "dynamic" then
 	local chosen_lut = planet_luts[lut_choice]
@@ -86,8 +104,6 @@ if lut_choice ~= "dynamic" then
 		for _, location in pairs(data.raw["space-location"] or {}) do
 			set_lut(location, chosen_lut)
 		end
-	else
-		report("unknown planet: " .. tostring(lut_choice))
 	end
 end
 
@@ -97,6 +113,11 @@ for _, planet in pairs(data.raw["planet"] or {}) do
 end
 for _, location in pairs(data.raw["space-location"] or {}) do
 	max_solar = math.max(max_solar, location.solar_power_in_space or 0)
+end
+
+local solar_limit = settings.startup["dynamic_platform_solar_limit"].value
+if solar_limit > 0 then
+	max_solar = math.min(max_solar, solar_limit)
 end
 
 data:extend({

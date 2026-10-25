@@ -1,21 +1,18 @@
 local function update_platform(surface)
-	if not surface.platform then
-		return
-	end
-
+	local platform = surface.platform
 	surface.freeze_daytime = true
 
 	if settings.startup["dynamic_platform_always_dark"].value then
-		surface.daytime = 0.5
+		surface.daytime = 0.995
 		return
 	end
 
-	local platform = surface.platform
 	local solar = nil
 
-	if platform.space_connection and platform.space_connection.from and platform.space_connection.to then
-		local from_s = platform.space_connection.from.solar_power_in_space
-		local to_s = platform.space_connection.to.solar_power_in_space
+	local connection = platform.space_connection
+	if connection and connection.from and connection.to then
+		local from_s = connection.from.solar_power_in_space
+		local to_s = connection.to.solar_power_in_space
 		if from_s and to_s then
 			solar = from_s * (1 - platform.distance) + to_s * platform.distance
 		end
@@ -40,17 +37,11 @@ local function update_platform(surface)
 	surface.daytime = 0.995 + (normalized * 0.005)
 end
 
-local function get_max_solar()
-	local mod_data = prototypes.mod_data["dynamic_platform_lighting-solar-power"]
-	if mod_data then
-		return mod_data.data.max_solar_power_in_space
-	end
-end
-
 local function ensure_storage()
 	storage.platform_memory = storage.platform_memory or {}
-	storage.solar_min = 0
-	storage.solar_max = get_max_solar()
+	storage.solar_min = settings.startup["dynamic_platform_solar_min"].value
+	local mod_data = prototypes.mod_data["dynamic_platform_lighting-solar-power"]
+	storage.solar_max = mod_data and mod_data.data.max_solar_power_in_space
 	storage.brightness = settings.startup["dynamic_platform_brightness"].value / 100
 end
 
@@ -65,10 +56,7 @@ end
 script.on_init(on_init)
 script.on_configuration_changed(on_configuration_changed)
 
-script.on_event(defines.events.on_tick, function(event)
-	if event.tick % 60 ~= 0 then
-		return
-	end
+script.on_nth_tick(120, function()
 	ensure_storage()
 	for _, surface in pairs(game.surfaces) do
 		if surface.platform then
